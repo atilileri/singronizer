@@ -50,35 +50,39 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       authorization: {
         params: {
+          scope: "openid email profile https://www.googleapis.com/auth/youtube.force-ssl",
           prompt: "consent",
           access_type: "offline",
           response_type: "code",
-          scope: "openid email profile https://www.googleapis.com/auth/youtube",
-          redirect_uri: "http://127.0.0.1:3000/api/auth/callback/google"
         },
       },
+      allowDangerousEmailAccountLinking: true,
     }),
   ],
   callbacks: {
-    async jwt({ token, account }: any) {
+    async jwt({ token, account, profile }: any) {
+      // Add the account data to the token on initial sign in
       if (account) {
         if (account.provider === "spotify") {
           token.spotifyAccessToken = account.access_token;
           token.spotifyRefreshToken = account.refresh_token;
           token.spotifyExpiresAt = account.expires_at;
+          token.spotifyConnected = true;
         }
         if (account.provider === "google") {
           token.youtubeAccessToken = account.access_token;
           token.youtubeRefreshToken = account.refresh_token;
           token.youtubeExpiresAt = account.expires_at;
+          token.youtubeConnected = true;
         }
       }
       return token;
     },
     async session({ session, token }: any) {
+      // Populate session with persistent platform connection info
       session.connectedPlatforms = {
-        spotify: !!token.spotifyAccessToken,
-        youtube: !!token.youtubeAccessToken,
+        spotify: !!token.spotifyConnected || !!token.spotifyAccessToken,
+        youtube: !!token.youtubeConnected || !!token.youtubeAccessToken,
       };
       return session;
     },

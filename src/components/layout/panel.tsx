@@ -23,7 +23,20 @@ export function Panel({ isSource }: { isSource: boolean }) {
   
   const [playlists, setPlaylists] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isSigningIn, setIsSigningIn] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const handleConnect = async () => {
+    setIsSigningIn(true);
+    // Note: NextAuth signIn usually triggers a redirect, 
+    // but the spinner provides immediate feedback until the page unloads.
+    try {
+      await signIn(providerMap[platform], { callbackUrl: 'http://127.0.0.1:3000/' });
+    } catch (e) {
+      console.error("[Panel] Sign in error:", e);
+      setIsSigningIn(false);
+    }
+  };
 
   const handleRefresh = async () => {
     setLoading(true);
@@ -46,7 +59,7 @@ export function Panel({ isSource }: { isSource: boolean }) {
         } else if (res.status === 401) {
            console.error(`[Panel] 401 Unauthorized for ${platform}. Triggering re-auth.`);
            setPlaylists([]);
-           signIn(providerMap[platform], { callbackUrl: 'http://127.0.0.1:3000/' });
+           handleConnect();
         } else {
            const errorData = await res.text();
            console.error(`[Panel] Error fetching playlists for ${platform}:`, res.status, errorData);
@@ -99,17 +112,17 @@ export function Panel({ isSource }: { isSource: boolean }) {
       </div>
       
       <div className="flex-1 overflow-y-auto hide-scrollbar px-6 py-4 space-y-1 relative">
-        {isAuthLoading ? (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-outline text-xs uppercase tracking-widest font-bold flex items-center gap-2">
-                <span className="material-symbols-outlined animate-spin text-sm">refresh</span>
-                Loading Auth...
+        {isAuthLoading || isSigningIn ? (
+            <div className="absolute inset-0 flex items-center justify-center text-center px-6">
+              <div className="text-outline text-xs uppercase tracking-widest font-bold flex flex-col items-center gap-3">
+                <span className="material-symbols-outlined animate-spin text-xl">refresh</span>
+                <div>{isSigningIn ? `Redirecting to ${platformLabels[platform]}...` : 'Loading Auth...'}</div>
               </div>
             </div>
         ) : !isConnected ? (
           <div className="absolute inset-0 flex items-center justify-center">
             <button 
-              onClick={() => signIn(providerMap[platform], { callbackUrl: 'http://127.0.0.1:3000/' })} 
+              onClick={handleConnect} 
               className="bg-primary hover:bg-zinc-800 text-on-primary transition-colors px-6 py-3 text-[10px] font-black uppercase tracking-widest"
             >
               Connect {platformLabels[platform]}
