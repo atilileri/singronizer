@@ -83,6 +83,7 @@ export default function Home() {
         <Panel isSource={true} />
         <ActionNode 
           isSyncing={store.isSyncing} 
+          isSyncEnabled={!!store.selectedSourcePlaylistId && !!store.selectedDestinationPlaylistId && !!session}
           progressPercentage={store.progressPercentage} 
           onSwap={store.swapPlatforms} 
           onSync={handleSync} 

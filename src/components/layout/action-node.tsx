@@ -2,12 +2,13 @@ import React from "react";
 
 interface ActionNodeProps {
   isSyncing?: boolean;
+  isSyncEnabled?: boolean;
   progressPercentage?: number;
   onSwap?: () => void;
   onSync?: () => void;
 }
 
-export function ActionNode({ isSyncing = false, progressPercentage = 0, onSwap, onSync }: ActionNodeProps) {
+export function ActionNode({ isSyncing = false, isSyncEnabled = false, progressPercentage = 0, onSwap, onSync }: ActionNodeProps) {
   return (
     <div className="w-24 flex flex-col items-center justify-center bg-surface relative z-10 gap-6 border-x border-outline-variant/10">
       <div className="h-full w-px bg-outline-variant/20 absolute top-0 left-1/2 -translate-x-1/2"></div>
@@ -23,8 +24,13 @@ export function ActionNode({ isSyncing = false, progressPercentage = 0, onSwap, 
 
       {!isSyncing ? (
         <button 
-          onClick={onSync}
-          className="group bg-primary text-on-primary px-4 py-6 flex flex-col items-center justify-center gap-2 z-20 hover:bg-zinc-800 transition-colors"
+          onClick={isSyncEnabled ? onSync : undefined}
+          disabled={!isSyncEnabled}
+          className={`group px-4 py-6 flex flex-col items-center justify-center gap-2 z-20 transition-colors ${
+            isSyncEnabled 
+              ? 'bg-primary text-on-primary hover:bg-zinc-800 cursor-pointer' 
+              : 'bg-surface-container-highest text-outline cursor-not-allowed'
+          }`}
         >
           <span className="text-[10px] font-black uppercase tracking-[0.2em] [writing-mode:vertical-lr] rotate-180">Sync</span>
           <span className="material-symbols-outlined text-lg">arrow_forward</span>
