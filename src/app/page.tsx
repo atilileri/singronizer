@@ -38,8 +38,8 @@ export default function Home() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             platform: store.destinationPlatform, 
-            name: `Synced from ${store.sourcePlatform} via Singronizer`, 
-            description: 'Created by Singronizer App' 
+            name: `Synced from ${store.sourcePlatform} via singronizer`, 
+            description: 'Created by singronizer App' 
           })
         });
         const created = await createRes.json();
