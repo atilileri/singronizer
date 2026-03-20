@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import Spotify from "next-auth/providers/spotify";
 import Google from "next-auth/providers/google";
+import { setPlatformTokens, getAllConnectedPlatforms, getPlatformTokens } from "./platform-cookies";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
@@ -60,30 +61,26 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, account, profile }: any) {
-      // Add the account data to the token on initial sign in
+    async jwt({ token, account }: any) {
       if (account) {
-        if (account.provider === "spotify") {
-          token.spotifyAccessToken = account.access_token;
-          token.spotifyRefreshToken = account.refresh_token;
-          token.spotifyExpiresAt = account.expires_at;
-          token.spotifyConnected = true;
-        }
-        if (account.provider === "google") {
-          token.youtubeAccessToken = account.access_token;
-          token.youtubeRefreshToken = account.refresh_token;
-          token.youtubeExpiresAt = account.expires_at;
-          token.youtubeConnected = true;
-        }
+        // Generic logic: whatever platform you just logged into, save it to its OWN cookie
+        const platformKey = account.provider === "google" ? "youtube" : account.provider;
+        
+        setPlatformTokens(platformKey, {
+          accessToken: account.access_token as string,
+          refreshToken: account.refresh_token as string,
+          expiresAt: account.expires_at as number,
+        });
+
+        // Also keep them in the JWT for this specific request cycle
+        token[`${platformKey}AccessToken`] = account.access_token;
       }
       return token;
     },
     async session({ session, token }: any) {
-      // Populate session with persistent platform connection info
-      session.connectedPlatforms = {
-        spotify: !!token.spotifyConnected || !!token.spotifyAccessToken,
-        youtube: !!token.youtubeConnected || !!token.youtubeAccessToken,
-      };
+      // Very generic: look through ALL singronizer cookies and tell the UI what's connected
+      const connected = await getAllConnectedPlatforms();
+      session.connectedPlatforms = connected.reduce((acc: any, p: string) => ({ ...acc, [p]: true }), {});
       return session;
     },
     async redirect({ url, baseUrl }) {
