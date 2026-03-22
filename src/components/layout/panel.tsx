@@ -15,7 +15,7 @@ const platformLabels: Record<Platform, string> = {
   youtube: 'YouTube Music'
 };
 
-export function Panel({ isSource, onPlaylistSelect }: { isSource: boolean; onPlaylistSelect?: (playlist: any) => void }) {
+export function Panel({ isSource }: { isSource: boolean }) {
   const store = useSyncStore();
   const { data, update, status } = useSession();
   const session = data as SingornizerSession;
@@ -127,7 +127,6 @@ export function Panel({ isSource, onPlaylistSelect }: { isSource: boolean; onPla
                       } else {
                         store.setSelectedDestinationPlaylist(p.id);
                       }
-                      if (onPlaylistSelect) onPlaylistSelect(p);
                     }}
                   />
                 ))

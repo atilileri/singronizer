@@ -32,6 +32,7 @@ function PlatformDropdown({
   hideName = false,
   hideLabel = false,
   labelClassName = "",
+  direction = "down",
 }: {
   value: Platform;
   onChange: (p: Platform) => void;
@@ -39,6 +40,7 @@ function PlatformDropdown({
   hideName?: boolean;
   hideLabel?: boolean;
   labelClassName?: string;
+  direction?: "up" | "down";
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -74,7 +76,11 @@ function PlatformDropdown({
         </button>
 
         {isOpen && (
-          <div className="absolute bottom-full left-0 mb-1 bg-surface-container-highest border border-outline-variant/20 shadow-xl z-60 min-w-max origin-bottom animate-in fade-in slide-in-from-bottom-2 duration-200">
+          <div className={`absolute left-0 bg-surface-container-highest border border-outline-variant/20 shadow-xl z-60 min-w-max animate-in fade-in duration-200 ${
+            direction === 'up' 
+              ? 'bottom-full mb-1 origin-bottom slide-in-from-bottom-2' 
+              : 'top-full mt-1 origin-top slide-in-from-top-2'
+          }`}>
             {platformOptions.map((o) => {
               const OptionIcon = o.icon;
               return (
@@ -179,7 +185,10 @@ export function TopBar({ isSyncEnabled = false, isSyncing = false, progressPerce
         {/* Refresh */}
         {!isSyncing && (
           <button
-            onClick={store.triggerRefresh}
+            onClick={() => {
+              store.triggerRefresh();
+              store.clearSelections();
+            }}
             className="flex items-center gap-1.5 px-3 py-1.5 h-[32px] hover:bg-surface-container-high transition-colors text-[10px] font-black uppercase tracking-widest text-on-surface"
             title="Refresh playlists"
           >

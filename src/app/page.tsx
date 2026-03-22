@@ -114,10 +114,42 @@ export default function Home() {
       />
 
       <main className={`layout-main ${useMobileWizard ? 'mobile-wizard-active' : ''}`}>
-        {/* Desktop View / Multi-panel */}
-        {!useMobileWizard && (
-          <>
+        {/* Source Panel Container */}
+        <div className={`flex-1 flex-col min-h-0 ${useMobileWizard && mobileStep === 'target' ? 'hidden sm:flex' : 'flex'}`}>
+          <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
             <Panel isSource={true} />
+          </div>
+          
+          {/* Mobile Next Button */}
+          {useMobileWizard && mobileStep === 'source' && (
+            <div className="px-6 py-2 flex-none">
+              <button 
+                onClick={() => setMobileStep('target')}
+                className="w-full btn-primary flex items-center justify-center gap-2 group"
+              >
+                Next: Choose Target
+                <span className="material-symbols-outlined transition-transform group-hover:translate-x-1">arrow_forward</span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Target Panel Container */}
+        <div className={`flex-1 flex-col min-h-0 ${useMobileWizard && mobileStep === 'source' ? 'hidden sm:flex' : 'flex'}`}>
+          {/* Mobile Previous Button */}
+          {useMobileWizard && mobileStep === 'target' && (
+            <div className="px-6 py-0 mb-4 flex-none">
+              <button 
+                onClick={() => setMobileStep('source')}
+                className="w-full flex items-center justify-center gap-2 py-2 text-outline hover:text-on-surface transition-colors text-[10px] uppercase font-black tracking-widest"
+              >
+                <span className="material-symbols-outlined text-sm">arrow_back</span>
+                Previous: Change Source
+              </button>
+            </div>
+          )}
+
+          <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
             {store.isSyncing ? (
               <SyncView
                 sourcePlaylistName={sourceName}
@@ -127,53 +159,8 @@ export default function Home() {
             ) : (
               <Panel isSource={false} />
             )}
-          </>
-        )}
-
-        {/* Mobile Wizard View */}
-        {useMobileWizard && (
-          <div className="flex-1 flex flex-col min-h-0 w-full animate-in fade-in duration-500">
-            {mobileStep === 'source' ? (
-              <div className="flex-1 flex flex-col min-h-0 space-y-4">
-                <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
-                  <Panel isSource={true} onPlaylistSelect={() => setMobileStep('target')} />
-                </div>
-                <div className="px-6 py-2">
-                  <button 
-                    onClick={() => setMobileStep('target')}
-                    className="w-full btn-primary flex items-center justify-center gap-2 group"
-                  >
-                    Next: Choose Target
-                    <span className="material-symbols-outlined transition-transform group-hover:translate-x-1">arrow_forward</span>
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex-1 flex flex-col min-h-0 space-y-4">
-                <div className="px-6 py-0">
-                  <button 
-                    onClick={() => setMobileStep('source')}
-                    className="w-full flex items-center justify-center gap-2 py-2 text-outline hover:text-on-surface transition-colors text-[10px] uppercase font-black tracking-widest"
-                  >
-                    <span className="material-symbols-outlined text-sm">arrow_back</span>
-                    Previous: Change Source
-                  </button>
-                </div>
-                <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
-                  {store.isSyncing ? (
-                    <SyncView
-                      sourcePlaylistName={sourceName}
-                      totalTracks={totalTracks}
-                      currentTrackIndex={currentTrackIndex}
-                    />
-                  ) : (
-                    <Panel isSource={false} />
-                  )}
-                </div>
-              </div>
-            )}
           </div>
-        )}
+        </div>
       </main>
 
       {/* Bottom bar — cluster (hidden when keyboard might be up or just standard mobile cluster) */}
@@ -197,6 +184,7 @@ export default function Home() {
           onChange={(p) => store.setSourcePlatform(p)}
           hideName={true}
           hideLabel={true}
+          direction="up"
         />
 
         {/* Sync / Progress */}
@@ -241,12 +229,16 @@ export default function Home() {
           onChange={(p) => store.setDestinationPlatform(p)}
           hideName={true}
           hideLabel={true}
+          direction="up"
         />
 
         {/* Refresh */}
         {!store.isSyncing && (
           <button
-            onClick={store.triggerRefresh}
+            onClick={() => {
+              store.triggerRefresh();
+              store.clearSelections();
+            }}
             className="btn-icon"
             title="Refresh playlists"
           >

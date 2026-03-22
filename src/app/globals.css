@@ -95,7 +95,7 @@
 
   /* Shared split panel — each takes 50% height on mobile, 50% width on sm+ */
   .panel-section {
-    @apply w-full sm:w-1/2 flex-1 min-h-0 min-w-0 flex flex-col bg-surface;
+    @apply w-full flex-1 min-h-0 min-w-0 flex flex-col bg-surface;
   }
 
   /* Mobile-only bottom navigation bar */
