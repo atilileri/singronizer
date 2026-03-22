@@ -46,71 +46,39 @@ export function TopBar({ isSyncEnabled = false, isSyncing = false, progressPerce
   const store = useSyncStore();
 
   return (
-    <header className="flex justify-between items-center w-full px-8 py-4 max-w-full bg-background text-on-surface font-['Inter'] antialiased text-sm tracking-tight fixed top-0 z-50 border-b border-outline-variant/10">
+    <header className="grid grid-cols-[1fr_auto_1fr] items-center w-full px-8 py-4 max-w-full bg-background text-on-surface font-['Inter'] antialiased text-sm tracking-tight fixed top-0 z-50 border-b border-outline-variant/10">
+      {/* Left: logo */}
       <div className="text-2xl font-black tracking-tighter text-primary">singronizer</div>
 
-      <div className="flex items-center gap-5">
-        {/* Platform selectors */}
+      {/* Center: from · refresh · swap · to · sync */}
+      <div className="flex items-center gap-3">
         <PlatformDropdown
           label="From"
           value={store.sourcePlatform}
           onChange={(p) => store.setSourcePlatform(p)}
         />
 
-        {/* Action buttons */}
-        <div className="flex items-center gap-1">
-          {/* Refresh */}
-          {!isSyncing && (
-            <button
-              onClick={store.triggerRefresh}
-              className="w-8 h-8 flex items-center justify-center hover:bg-surface-container-high transition-colors"
-              title="Refresh playlists"
-            >
-              <span className="material-symbols-outlined text-[18px] text-on-surface">refresh</span>
-            </button>
-          )}
+        {/* Refresh */}
+        {!isSyncing && (
+          <button
+            onClick={store.triggerRefresh}
+            className="w-8 h-8 flex items-center justify-center hover:bg-surface-container-high transition-colors"
+            title="Refresh playlists"
+          >
+            <span className="material-symbols-outlined text-[18px] text-on-surface">refresh</span>
+          </button>
+        )}
 
-          {/* Swap */}
-          {!isSyncing && (
-            <button
-              onClick={store.swapPlatforms}
-              className="w-8 h-8 flex items-center justify-center hover:bg-surface-container-high transition-colors"
-              title="Swap platforms"
-            >
-              <span className="material-symbols-outlined text-[18px] text-on-surface">swap_horiz</span>
-            </button>
-          )}
-
-          {/* Sync / Progress */}
-          {isSyncing ? (
-            <div className="relative w-8 h-8 flex items-center justify-center" title={`${Math.round(progressPercentage)}%`}>
-              <svg className="w-7 h-7 -rotate-90" viewBox="0 0 32 32">
-                <circle className="text-surface-container-highest" cx="16" cy="16" fill="transparent" r="13" stroke="currentColor" strokeWidth="2" />
-                <circle
-                  className="text-primary transition-all duration-300"
-                  cx="16" cy="16" fill="transparent" r="13" stroke="currentColor"
-                  strokeDasharray="81.7"
-                  strokeDashoffset={81.7 - (81.7 * progressPercentage) / 100}
-                  strokeWidth="2"
-                />
-              </svg>
-              <span className="absolute text-[8px] font-black leading-none">{Math.round(progressPercentage)}%</span>
-            </div>
-          ) : (
-            <button
-              onClick={isSyncEnabled ? onSync : undefined}
-              disabled={!isSyncEnabled}
-              className={`flex items-center gap-1.5 px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-colors ${
-                isSyncEnabled
-                  ? 'bg-primary text-on-primary hover:bg-zinc-800 cursor-pointer'
-                  : 'bg-surface-container-highest text-outline cursor-not-allowed'
-              }`}
-            >
-              Sync
-              <span className="material-symbols-outlined text-base">arrow_forward</span>
-            </button>
-          )}
-        </div>
+        {/* Swap */}
+        {!isSyncing && (
+          <button
+            onClick={store.swapPlatforms}
+            className="w-8 h-8 flex items-center justify-center hover:bg-surface-container-high transition-colors"
+            title="Swap platforms"
+          >
+            <span className="material-symbols-outlined text-[18px] text-on-surface">swap_horiz</span>
+          </button>
+        )}
 
         <PlatformDropdown
           label="To"
@@ -118,8 +86,39 @@ export function TopBar({ isSyncEnabled = false, isSyncing = false, progressPerce
           onChange={(p) => store.setDestinationPlatform(p)}
         />
 
-        <div className="w-px h-4 bg-outline-variant/30" />
+        {/* Sync / Progress */}
+        {isSyncing ? (
+          <div className="relative w-8 h-8 flex items-center justify-center" title={`${Math.round(progressPercentage)}%`}>
+            <svg className="w-7 h-7 -rotate-90" viewBox="0 0 32 32">
+              <circle className="text-surface-container-highest" cx="16" cy="16" fill="transparent" r="13" stroke="currentColor" strokeWidth="2" />
+              <circle
+                className="text-primary transition-all duration-300"
+                cx="16" cy="16" fill="transparent" r="13" stroke="currentColor"
+                strokeDasharray="81.7"
+                strokeDashoffset={81.7 - (81.7 * progressPercentage) / 100}
+                strokeWidth="2"
+              />
+            </svg>
+            <span className="absolute text-[8px] font-black leading-none">{Math.round(progressPercentage)}%</span>
+          </div>
+        ) : (
+          <button
+            onClick={isSyncEnabled ? onSync : undefined}
+            disabled={!isSyncEnabled}
+            className={`flex items-center gap-1.5 px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-colors ${
+              isSyncEnabled
+                ? 'bg-primary text-on-primary hover:bg-zinc-800 cursor-pointer'
+                : 'bg-surface-container-highest text-outline cursor-not-allowed'
+            }`}
+          >
+            Sync
+            <span className="material-symbols-outlined text-base">arrow_forward</span>
+          </button>
+        )}
+      </div>
 
+      {/* Right: buy me a coffee — far right anchor */}
+      <div className="flex items-center justify-end">
         <button className="text-[10px] font-black uppercase tracking-widest hover:bg-surface-container-high transition-colors px-2 py-1 text-on-surface">
           buy me a coffee
         </button>
