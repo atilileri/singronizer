@@ -15,7 +15,7 @@ export function SyncView({ sourcePlaylistName, totalTracks, currentTrackIndex }:
       <div className="flex-1 flex flex-col p-6 min-h-0">
         <div className="flex-none">
           <div className="flex justify-between items-end mb-4">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.1em] text-on-surface-variant">
+            <h2 className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">
               Syncing: {sourcePlaylistName}
             </h2>
             <span className="text-[10px] font-black text-primary">{Math.round(store.progressPercentage)}%</span>
