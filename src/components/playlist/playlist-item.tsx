@@ -20,7 +20,7 @@ export function PlaylistItem({ title, subtitle, imageUrl, isSelected, onClick, i
           <span className="material-symbols-outlined text-xl">add</span>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[11px] font-bold truncate leading-tight">{title}</p>
+          <p className="text-[11px] font-bold wrap-break-word whitespace-normal leading-tight">{title}</p>
           <p className="text-[9px] text-on-primary/70 uppercase tracking-tighter">{subtitle}</p>
         </div>
       </div>
@@ -46,7 +46,7 @@ export function PlaylistItem({ title, subtitle, imageUrl, isSelected, onClick, i
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[11px] font-bold truncate leading-tight">{title}</p>
+        <p className="text-[11px] font-bold wrap-break-word whitespace-normal leading-tight">{title}</p>
         <p className={`text-[9px] uppercase tracking-tighter ${isSelected ? 'text-on-surface-variant' : 'text-on-surface-variant'}`}>
           {subtitle}
         </p>

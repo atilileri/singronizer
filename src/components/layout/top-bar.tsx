@@ -42,16 +42,18 @@ interface TopBarProps {
   onSync?: () => void;
 }
 
+export { PlatformDropdown };
+
 export function TopBar({ isSyncEnabled = false, isSyncing = false, progressPercentage = 0, onSync }: TopBarProps) {
   const store = useSyncStore();
 
   return (
-    <header className="grid grid-cols-[1fr_auto_1fr] items-center w-full px-8 py-4 max-w-full bg-background text-on-surface font-['Inter'] antialiased text-sm tracking-tight fixed top-0 z-50 border-b border-outline-variant/10">
-      {/* Left: logo */}
+    <header className="grid grid-cols-[1fr_auto_1fr] items-center w-full px-6 py-4 max-w-full bg-background text-on-surface font-['Inter'] antialiased text-sm tracking-tight fixed top-0 z-50 border-b border-outline-variant/10">
+      {/* Left: logo — always visible */}
       <div className="text-2xl font-black tracking-tighter text-primary">singronizer</div>
 
-      {/* Center: from · refresh · swap · to · sync */}
-      <div className="flex items-center gap-3">
+      {/* Center: cluster — hidden below sm, visible sm+ */}
+      <div className="hidden sm:flex items-center gap-3">
         <PlatformDropdown
           label="From"
           value={store.sourcePlatform}
@@ -117,7 +119,7 @@ export function TopBar({ isSyncEnabled = false, isSyncing = false, progressPerce
         )}
       </div>
 
-      {/* Right: buy me a coffee — far right anchor */}
+      {/* Right: buy me a coffee — always visible */}
       <div className="flex items-center justify-end">
         <button className="text-[10px] font-black uppercase tracking-widest hover:bg-surface-container-high transition-colors px-2 py-1 text-on-surface">
           buy me a coffee

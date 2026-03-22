@@ -79,7 +79,7 @@ export function Panel({ isSource }: { isSource: boolean }) {
 
 
   return (
-    <section className={`flex-1 flex flex-col bg-surface ${isSource ? 'border-r border-outline-variant/10 bg-surface-container-low' : ''}`}>
+    <section className={`w-1/2 min-w-0 flex flex-col bg-surface ${isSource ? 'border-r border-outline-variant/10 bg-surface-container-low' : ''}`}>
 
       <div className="flex-1 overflow-y-auto hide-scrollbar px-6 py-4 space-y-1 relative">
         {isAuthLoading || isSigningIn ? (

@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { TopBar } from "@/components/layout/top-bar";
+import { TopBar, PlatformDropdown } from "@/components/layout/top-bar";
 import { Panel } from "@/components/layout/panel";
 import { useSyncStore } from "@/lib/store/use-sync-store";
 import { SyncView } from "@/components/sync/sync-view";
@@ -12,6 +12,8 @@ export default function Home() {
   const [totalTracks, setTotalTracks] = useState(0);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [sourceName, setSourceName] = useState("");
+
+  const isSyncEnabled = !!store.selectedSourcePlaylistId && !!store.selectedDestinationPlaylistId && !!session;
 
   const handleSync = async () => {
     if (!store.selectedSourcePlaylistId || !store.selectedDestinationPlaylistId || !session) {
@@ -78,15 +80,17 @@ export default function Home() {
   return (
     <>
       <TopBar
-        isSyncEnabled={!!store.selectedSourcePlaylistId && !!store.selectedDestinationPlaylistId && !!session}
+        isSyncEnabled={isSyncEnabled}
         isSyncing={store.isSyncing}
         progressPercentage={store.progressPercentage}
         onSync={handleSync}
       />
-      <main className="flex h-screen pt-[72px] bg-surface">
+
+      {/* Main content — extra bottom padding on mobile to clear the bottom bar */}
+      <main className="flex h-screen pt-[72px] pb-16 sm:pb-0 bg-surface">
         <Panel isSource={true} />
         {store.isSyncing ? (
-          <section className="flex-1 flex flex-col bg-surface">
+          <section className="w-1/2 min-w-0 flex flex-col bg-surface">
             <SyncView
               sourcePlaylistName={sourceName}
               totalTracks={totalTracks}
@@ -96,14 +100,74 @@ export default function Home() {
         ) : (
           <Panel isSource={false} />
         )}
-
-        <nav className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center bg-white/80 backdrop-blur-xl border-t border-zinc-200/20 md:hidden h-16 shadow-[0_-12px_40px_rgba(0,0,0,0.04)]">
-          <a className="flex flex-col items-center justify-center text-zinc-900 bg-zinc-100/50 p-4 w-full h-full">
-            <span className="material-symbols-outlined">sync_alt</span>
-            <span className="font-['Inter'] text-[10px] uppercase tracking-[0.05em] font-bold mt-1">Sync</span>
-          </a>
-        </nav>
       </main>
+
+      {/* Bottom bar — only visible below sm breakpoint */}
+      <nav className="sm:hidden fixed bottom-0 left-0 w-full z-50 flex items-center justify-center gap-3 px-4 py-3 bg-background border-t border-outline-variant/10">
+        <PlatformDropdown
+          label="From"
+          value={store.sourcePlatform}
+          onChange={(p) => store.setSourcePlatform(p)}
+        />
+
+        {/* Refresh */}
+        {!store.isSyncing && (
+          <button
+            onClick={store.triggerRefresh}
+            className="w-8 h-8 flex items-center justify-center hover:bg-surface-container-high transition-colors"
+            title="Refresh playlists"
+          >
+            <span className="material-symbols-outlined text-[18px] text-on-surface">refresh</span>
+          </button>
+        )}
+
+        {/* Swap */}
+        {!store.isSyncing && (
+          <button
+            onClick={store.swapPlatforms}
+            className="w-8 h-8 flex items-center justify-center hover:bg-surface-container-high transition-colors"
+            title="Swap platforms"
+          >
+            <span className="material-symbols-outlined text-[18px] text-on-surface">swap_horiz</span>
+          </button>
+        )}
+
+        <PlatformDropdown
+          label="To"
+          value={store.destinationPlatform}
+          onChange={(p) => store.setDestinationPlatform(p)}
+        />
+
+        {/* Sync / Progress */}
+        {store.isSyncing ? (
+          <div className="relative w-8 h-8 flex items-center justify-center" title={`${Math.round(store.progressPercentage)}%`}>
+            <svg className="w-7 h-7 -rotate-90" viewBox="0 0 32 32">
+              <circle className="text-surface-container-highest" cx="16" cy="16" fill="transparent" r="13" stroke="currentColor" strokeWidth="2" />
+              <circle
+                className="text-primary transition-all duration-300"
+                cx="16" cy="16" fill="transparent" r="13" stroke="currentColor"
+                strokeDasharray="81.7"
+                strokeDashoffset={81.7 - (81.7 * store.progressPercentage) / 100}
+                strokeWidth="2"
+              />
+            </svg>
+            <span className="absolute text-[8px] font-black leading-none">{Math.round(store.progressPercentage)}%</span>
+          </div>
+        ) : (
+          <button
+            onClick={isSyncEnabled ? handleSync : undefined}
+            disabled={!isSyncEnabled}
+            className={`flex items-center gap-1.5 px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-colors ${
+              isSyncEnabled
+                ? 'bg-primary text-on-primary hover:bg-zinc-800 cursor-pointer'
+                : 'bg-surface-container-highest text-outline cursor-not-allowed'
+            }`}
+          >
+            Sync
+            <span className="material-symbols-outlined text-base">arrow_forward</span>
+          </button>
+        )}
+      </nav>
     </>
   );
 }
