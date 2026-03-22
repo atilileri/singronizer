@@ -3,6 +3,7 @@ import { getToken } from 'next-auth/jwt';
 import { SpotifyAdapter } from '@/lib/adapters/spotify-adapter';
 import { YouTubeAdapter } from '@/lib/adapters/youtube-adapter';
 import { Track } from '@/lib/adapters/base-adapter';
+import { getAndRefreshPlatformTokens } from '@/lib/auth/platform-cookies';
 
 // Vercel 10s Serverless timeout bypass -> the frontend will slice the track payload into max 20 sizes
 export async function POST(req: NextRequest) {
@@ -12,9 +13,14 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { destinationPlatform, targetPlaylistId, tracks } = body;
 
+  const platformTokens = await getAndRefreshPlatformTokens(destinationPlatform);
+  if (!platformTokens) {
+    return NextResponse.json({ error: 'Destination session expired. Please reconnect.' }, { status: 401 });
+  }
+
   const destAdapter = destinationPlatform === 'spotify' 
-    ? new SpotifyAdapter(token.spotifyAccessToken as string)
-    : new YouTubeAdapter(token.youtubeAccessToken as string);
+    ? new SpotifyAdapter(platformTokens.accessToken)
+    : new YouTubeAdapter(platformTokens.accessToken);
 
   const matchedTrackIds: string[] = [];
   const log: string[] = [];

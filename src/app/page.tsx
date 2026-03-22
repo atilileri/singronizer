@@ -1,7 +1,6 @@
 'use client';
 import { useState } from 'react';
 import { TopBar } from "@/components/layout/top-bar";
-import { ActionNode } from "@/components/layout/action-node";
 import { Panel } from "@/components/layout/panel";
 import { useSyncStore } from "@/lib/store/use-sync-store";
 import { SyncView } from "@/components/sync/sync-view";
@@ -19,11 +18,11 @@ export default function Home() {
       alert("Please sign in and select both a source and destination playlist to sync.");
       return;
     }
-    
+
     store.setIsSyncing(true);
     store.setProgress(0);
     setCurrentTrackIndex(0);
-    
+
     try {
       const res = await fetch(`/api/tracks/${store.selectedSourcePlaylistId}?platform=${store.sourcePlatform}`);
       const tracks = await res.json();
@@ -36,10 +35,10 @@ export default function Home() {
         const createRes = await fetch('/api/playlists/create', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            platform: store.destinationPlatform, 
-            name: `Synced from ${store.sourcePlatform} via singronizer`, 
-            description: 'Created by singronizer App' 
+          body: JSON.stringify({
+            platform: store.destinationPlatform,
+            name: `Synced from ${store.sourcePlatform} via singronizer`,
+            description: 'Created by singronizer App'
           })
         });
         const created = await createRes.json();
@@ -48,28 +47,28 @@ export default function Home() {
 
       const CHUNK_SIZE = 20;
       let completed = 0;
-      
+
       for (let i = 0; i < tracks.length; i += CHUNK_SIZE) {
         const chunk = tracks.slice(i, i + CHUNK_SIZE);
-        
+
         const syncRes = await fetch('/api/sync', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-             destinationPlatform: store.destinationPlatform,
-             targetPlaylistId: targetId,
-             tracks: chunk
+            destinationPlatform: store.destinationPlatform,
+            targetPlaylistId: targetId,
+            tracks: chunk
           })
         });
 
         const syncData = await syncRes.json();
         syncData.log.forEach((l: string) => store.addSyncLog(l));
-        
+
         completed += chunk.length;
         setCurrentTrackIndex(Math.min(completed, tracks.length));
         store.setProgress((Math.min(completed, tracks.length) / tracks.length) * 100);
       }
-      
+
     } catch (e) {
       console.error(e);
       store.addSyncLog(`Critical Error: Execution Pipeline failed. Check console.`);
@@ -78,27 +77,20 @@ export default function Home() {
 
   return (
     <>
-      <TopBar />
+      <TopBar
+        isSyncEnabled={!!store.selectedSourcePlaylistId && !!store.selectedDestinationPlaylistId && !!session}
+        isSyncing={store.isSyncing}
+        progressPercentage={store.progressPercentage}
+        onSync={handleSync}
+      />
       <main className="flex h-screen pt-[72px] bg-surface">
         <Panel isSource={true} />
-        <ActionNode 
-          isSyncing={store.isSyncing} 
-          isSyncEnabled={!!store.selectedSourcePlaylistId && !!store.selectedDestinationPlaylistId && !!session}
-          progressPercentage={store.progressPercentage} 
-          onSwap={store.swapPlatforms} 
-          onSync={handleSync} 
-        />
         {store.isSyncing ? (
           <section className="flex-1 flex flex-col bg-surface">
-            <div className="px-6 py-3 bg-surface-container border-b border-outline-variant/10 flex items-center justify-between">
-              <button className="flex items-center gap-2 bg-surface-container-lowest hover:bg-surface-container-high transition-colors px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider">
-                {store.destinationPlatform === 'spotify' ? 'Spotify' : 'YouTube Music'} <span className="material-symbols-outlined text-sm">expand_more</span>
-              </button>
-            </div>
-            <SyncView 
-              sourcePlaylistName={sourceName} 
-              totalTracks={totalTracks} 
-              currentTrackIndex={currentTrackIndex} 
+            <SyncView
+              sourcePlaylistName={sourceName}
+              totalTracks={totalTracks}
+              currentTrackIndex={currentTrackIndex}
             />
           </section>
         ) : (

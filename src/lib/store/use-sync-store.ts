@@ -10,6 +10,7 @@ interface SyncState {
   isSyncing: boolean;
   progressPercentage: number;
   syncLogs: string[];
+  globalRefreshKey: number;
   
   setSourcePlatform: (platform: Platform) => void;
   setDestinationPlatform: (platform: Platform) => void;
@@ -19,6 +20,7 @@ interface SyncState {
   setProgress: (percentage: number) => void;
   addSyncLog: (log: string) => void;
   swapPlatforms: () => void;
+  triggerRefresh: () => void;
 }
 
 export const useSyncStore = create<SyncState>((set) => ({
@@ -43,4 +45,6 @@ export const useSyncStore = create<SyncState>((set) => ({
     selectedSourcePlaylistId: null,
     selectedDestinationPlaylistId: null,
   })),
+  globalRefreshKey: 0,
+  triggerRefresh: () => set((state) => ({ globalRefreshKey: state.globalRefreshKey + 1 })),
 }));

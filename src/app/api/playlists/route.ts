@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { SpotifyAdapter } from '@/lib/adapters/spotify-adapter';
 import { YouTubeAdapter } from '@/lib/adapters/youtube-adapter';
-import { getPlatformTokens } from '@/lib/auth/platform-cookies';
+import { getAndRefreshPlatformTokens } from '@/lib/auth/platform-cookies';
 
 export async function GET(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.AUTH_SECRET });
@@ -21,13 +21,13 @@ export async function GET(req: NextRequest) {
   try {
     // Independent Cookie Strategy:
     // We fetch tokens from their dedicated platform cookie, not the session.
-    const platformTokens = await getPlatformTokens(platform);
+    const platformTokens = await getAndRefreshPlatformTokens(platform);
     
     if (!platformTokens) {
-      console.error(`[API/Playlists] No tokens found in independent cookie for ${platform}`);
+      console.error(`[API/Playlists] No valid tokens found in independent cookie for ${platform}`);
       return NextResponse.json({ 
-        error: `Not connected to ${platform}. Please connect your account.` 
-      }, { status: 400 });
+        error: `Not connected to ${platform} or session expired. Please connect your account again.` 
+      }, { status: 401 });
     }
 
     const adapter = platform === 'spotify' 
