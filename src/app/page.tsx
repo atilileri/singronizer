@@ -104,23 +104,6 @@ export default function Home() {
 
       {/* Bottom bar — only visible below sm breakpoint */}
       <nav className="sm:hidden fixed bottom-0 left-0 w-full z-50 flex items-center justify-center gap-3 px-4 py-3 bg-background border-t border-outline-variant/10">
-        <PlatformDropdown
-          label="From"
-          value={store.sourcePlatform}
-          onChange={(p) => store.setSourcePlatform(p)}
-        />
-
-        {/* Refresh */}
-        {!store.isSyncing && (
-          <button
-            onClick={store.triggerRefresh}
-            className="w-8 h-8 flex items-center justify-center hover:bg-surface-container-high transition-colors"
-            title="Refresh playlists"
-          >
-            <span className="material-symbols-outlined text-[18px] text-on-surface">refresh</span>
-          </button>
-        )}
-
         {/* Swap */}
         {!store.isSyncing && (
           <button
@@ -133,9 +116,11 @@ export default function Home() {
         )}
 
         <PlatformDropdown
-          label="To"
-          value={store.destinationPlatform}
-          onChange={(p) => store.setDestinationPlatform(p)}
+          label="From"
+          value={store.sourcePlatform}
+          onChange={(p) => store.setSourcePlatform(p)}
+          hideName={true}
+          hideLabel={true}
         />
 
         {/* Sync / Progress */}
@@ -165,6 +150,25 @@ export default function Home() {
           >
             Sync
             <span className="material-symbols-outlined text-base">arrow_forward</span>
+          </button>
+        )}
+
+        <PlatformDropdown
+          label="To"
+          value={store.destinationPlatform}
+          onChange={(p) => store.setDestinationPlatform(p)}
+          hideName={true}
+          hideLabel={true}
+        />
+
+        {/* Refresh */}
+        {!store.isSyncing && (
+          <button
+            onClick={store.triggerRefresh}
+            className="w-8 h-8 flex items-center justify-center hover:bg-surface-container-high transition-colors"
+            title="Refresh playlists"
+          >
+            <span className="material-symbols-outlined text-[18px] text-on-surface">refresh</span>
           </button>
         )}
       </nav>
