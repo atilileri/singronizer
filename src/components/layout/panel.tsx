@@ -1,8 +1,9 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { PlaylistItem } from '@/components/playlist/playlist-item';
-import { useSyncStore, Platform } from '@/lib/store/use-sync-store';
+import { useSyncStore, type Platform } from '@/lib/store/use-sync-store';
 import { useSession, signIn } from 'next-auth/react';
+import type { Playlist, SingornizerSession } from '@/lib/types';
 
 const providerMap: Record<Platform, string> = {
   spotify: 'spotify',
@@ -16,12 +17,14 @@ const platformLabels: Record<Platform, string> = {
 
 export function Panel({ isSource }: { isSource: boolean }) {
   const store = useSyncStore();
-  const { data: session, update, status } = useSession();
+  const { data, update, status } = useSession();
+  const session = data as SingornizerSession;
+
   const platform = isSource ? store.sourcePlatform : store.destinationPlatform;
-  const isConnected = (session as any)?.connectedPlatforms?.[platform] ?? false;
+  const isConnected = session?.connectedPlatforms?.[platform] ?? false;
   const isAuthLoading = status === 'loading';
 
-  const [playlists, setPlaylists] = useState<any[]>([]);
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [loading, setLoading] = useState(false);
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [lastLocalRefreshKey, setLastLocalRefreshKey] = useState(0);
@@ -37,7 +40,6 @@ export function Panel({ isSource }: { isSource: boolean }) {
       setIsSigningIn(false);
     }
   };
-
 
   useEffect(() => {
     async function fetchPlaylists() {
@@ -77,10 +79,8 @@ export function Panel({ isSource }: { isSource: boolean }) {
     fetchPlaylists();
   }, [platform, session, isConnected, store.globalRefreshKey]);
 
-
   return (
-    <section className={`w-1/2 min-w-0 flex flex-col bg-surface ${isSource ? 'border-r border-outline-variant/10 bg-surface-container-low' : ''}`}>
-
+    <section className={`panel-section ${isSource ? 'border-r border-outline-variant/10 bg-surface-container-low' : ''}`}>
       <div className="flex-1 overflow-y-auto hide-scrollbar px-6 py-4 space-y-1 relative">
         {isAuthLoading || isSigningIn ? (
           <div className="absolute inset-0 flex items-center justify-center text-center px-6">
@@ -93,7 +93,7 @@ export function Panel({ isSource }: { isSource: boolean }) {
           <div className="absolute inset-0 flex items-center justify-center">
             <button
               onClick={handleConnect}
-              className="bg-primary hover:bg-zinc-800 text-on-primary transition-colors px-6 py-3 text-[10px] font-black uppercase tracking-widest"
+              className="btn-primary"
             >
               Connect {platformLabels[platform]}
             </button>
