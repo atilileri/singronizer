@@ -20,10 +20,11 @@ interface SyncState {
   setProgress: (percentage: number) => void;
   addSyncLog: (log: string) => void;
   swapPlatforms: () => void;
+  clearSelections: () => void;
   triggerRefresh: () => void;
 }
 
-export const useSyncStore = create<SyncState>((set) => ({
+export const useSyncStore = create<SyncState>((set, get) => ({
   sourcePlatform: 'spotify',
   destinationPlatform: 'youtube',
   selectedSourcePlaylistId: null,
@@ -32,19 +33,27 @@ export const useSyncStore = create<SyncState>((set) => ({
   progressPercentage: 0,
   syncLogs: [],
 
-  setSourcePlatform: (platform) => set({ sourcePlatform: platform }),
-  setDestinationPlatform: (platform) => set({ destinationPlatform: platform }),
+  setSourcePlatform: (platform) => {
+    set({ sourcePlatform: platform });
+    get().clearSelections();
+  },
+  setDestinationPlatform: (platform) => {
+    set({ destinationPlatform: platform });
+    get().clearSelections();
+  },
   setSelectedSourcePlaylist: (id) => set({ selectedSourcePlaylistId: id }),
   setSelectedDestinationPlaylist: (id) => set({ selectedDestinationPlaylistId: id }),
   setIsSyncing: (isSyncing) => set({ isSyncing }),
   setProgress: (percentage) => set({ progressPercentage: percentage }),
   addSyncLog: (log) => set((state) => ({ syncLogs: [...state.syncLogs, log] })),
-  swapPlatforms: () => set((state) => ({ 
-    sourcePlatform: state.destinationPlatform, 
-    destinationPlatform: state.sourcePlatform,
-    selectedSourcePlaylistId: null,
-    selectedDestinationPlaylistId: null,
-  })),
+  clearSelections: () => set({ selectedSourcePlaylistId: null, selectedDestinationPlaylistId: null }),
+  swapPlatforms: () => {
+    set((state) => ({ 
+      sourcePlatform: state.destinationPlatform, 
+      destinationPlatform: state.sourcePlatform,
+    }));
+    get().clearSelections();
+  },
   globalRefreshKey: 0,
   triggerRefresh: () => set((state) => ({ globalRefreshKey: state.globalRefreshKey + 1 })),
 }));

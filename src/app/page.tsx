@@ -1,10 +1,11 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TopBar, PlatformDropdown } from "@/components/layout/top-bar";
 import { Panel } from "@/components/layout/panel";
 import { useSyncStore } from "@/lib/store/use-sync-store";
 import { SyncView } from "@/components/sync/sync-view";
 import { useSession } from "next-auth/react";
+import type { SingornizerSession } from "@/lib/types";
 
 export default function Home() {
   const store = useSyncStore();
@@ -12,6 +13,26 @@ export default function Home() {
   const [totalTracks, setTotalTracks] = useState(0);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [sourceName, setSourceName] = useState("");
+  const [mobileStep, setMobileStep] = useState<'source' | 'target'>('source');
+  const [isMobile, setIsMobile] = useState(false);
+
+  const singSession = session as SingornizerSession;
+  const isBothConnected = !!singSession?.connectedPlatforms?.[store.sourcePlatform] && 
+                          !!singSession?.connectedPlatforms?.[store.destinationPlatform];
+  const useMobileWizard = isMobile && isBothConnected;
+
+  // Sync mobile step with platform changes or refresh
+  useEffect(() => {
+    setMobileStep('source');
+  }, [store.sourcePlatform, store.destinationPlatform, store.globalRefreshKey]);
+
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 639px)"); // < sm
+    const onChange = (e: MediaQueryListEvent | MediaQueryList) => setIsMobile(e.matches);
+    onChange(mql);
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
 
   const isSyncEnabled =
     !!store.selectedSourcePlaylistId &&
@@ -92,21 +113,70 @@ export default function Home() {
         onSync={handleSync}
       />
 
-      <main className="layout-main">
-        <Panel isSource={true} />
+      <main className={`layout-main ${useMobileWizard ? 'mobile-wizard-active' : ''}`}>
+        {/* Desktop View / Multi-panel */}
+        {!useMobileWizard && (
+          <>
+            <Panel isSource={true} />
+            {store.isSyncing ? (
+              <SyncView
+                sourcePlaylistName={sourceName}
+                totalTracks={totalTracks}
+                currentTrackIndex={currentTrackIndex}
+              />
+            ) : (
+              <Panel isSource={false} />
+            )}
+          </>
+        )}
 
-        {store.isSyncing ? (
-          <SyncView
-            sourcePlaylistName={sourceName}
-            totalTracks={totalTracks}
-            currentTrackIndex={currentTrackIndex}
-          />
-        ) : (
-          <Panel isSource={false} />
+        {/* Mobile Wizard View */}
+        {useMobileWizard && (
+          <div className="flex-1 flex flex-col min-h-0 w-full animate-in fade-in duration-500">
+            {mobileStep === 'source' ? (
+              <div className="flex-1 flex flex-col min-h-0 space-y-4">
+                <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+                  <Panel isSource={true} onPlaylistSelect={() => setMobileStep('target')} />
+                </div>
+                <div className="px-6 py-2">
+                  <button 
+                    onClick={() => setMobileStep('target')}
+                    className="w-full btn-primary flex items-center justify-center gap-2 group"
+                  >
+                    Next: Choose Target
+                    <span className="material-symbols-outlined transition-transform group-hover:translate-x-1">arrow_forward</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex-1 flex flex-col min-h-0 space-y-4">
+                <div className="px-6 py-0">
+                  <button 
+                    onClick={() => setMobileStep('source')}
+                    className="w-full flex items-center justify-center gap-2 py-2 text-outline hover:text-on-surface transition-colors text-[10px] uppercase font-black tracking-widest"
+                  >
+                    <span className="material-symbols-outlined text-sm">arrow_back</span>
+                    Previous: Change Source
+                  </button>
+                </div>
+                <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+                  {store.isSyncing ? (
+                    <SyncView
+                      sourcePlaylistName={sourceName}
+                      totalTracks={totalTracks}
+                      currentTrackIndex={currentTrackIndex}
+                    />
+                  ) : (
+                    <Panel isSource={false} />
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         )}
       </main>
 
-      {/* Bottom bar — only visible below sm breakpoint */}
+      {/* Bottom bar — cluster (hidden when keyboard might be up or just standard mobile cluster) */}
       <nav className="bottom-nav-mobile">
         {/* Swap */}
         {!store.isSyncing && (

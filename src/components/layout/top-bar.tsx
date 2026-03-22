@@ -74,7 +74,7 @@ function PlatformDropdown({
         </button>
 
         {isOpen && (
-          <div className="absolute top-full left-0 mt-1 bg-surface-container-highest border border-outline-variant/20 shadow-xl z-60 min-w-max">
+          <div className="absolute bottom-full left-0 mb-1 bg-surface-container-highest border border-outline-variant/20 shadow-xl z-60 min-w-max origin-bottom animate-in fade-in slide-in-from-bottom-2 duration-200">
             {platformOptions.map((o) => {
               const OptionIcon = o.icon;
               return (
